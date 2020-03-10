@@ -4,10 +4,10 @@ public class Square {
     Square nextInCol;
     Square prev;
     Square nextInBox;
-    int[] availableNums;
+    Square [] availableNums;
 
     public Square () {
-        availableNums = new int[9];
+        availableNums = new Square[9];
     }
 
     @Override

@@ -6,7 +6,7 @@ public class Board {
 
     Square[][] board = new Square[9][9];
 
-    Square startSquare = board[0][0];
+
 
     public void generateBoard() {
         for (int i2 = 0; i2 < 9; i2++) {
@@ -18,9 +18,10 @@ public class Board {
             for (int j = 0; j < 9; j++) {
                 if (j < 8) {
                     board[i][j].nextInRow = board[i][j + 1];
-                    if (j<0){
-                        board[i][j].prev= board[i][j-1];
-                    }
+
+                }
+                if (j>0){
+                    board[i][j].prev= board[i][j-1];
                 }
                 if (i < 8) {
                     board[i][j].nextInCol = board[i + 1][j];
@@ -32,10 +33,11 @@ public class Board {
                         board[i][j].nextInBox = board[i][j + 1];
                     }
 
-
             }
         }
     }
+
+
 
     public void populateBoard() {
         List<Integer> randomNums = generateRandomNumbers();
@@ -45,60 +47,60 @@ public class Board {
                 square = board[i][j];
                 int value = findAvailableNum(square, randomNums);
                 square.value = value;
-                updateRow(square.nextInRow, value);
-                updateCol(square.nextInCol, value);
-                updateBox(square, value);
+                updateRow(square.nextInRow, value,square);
+                updateCol(square.nextInCol, value,square);
+                updateBox(square, value,square );
+                printBoard();
             }
-            printBoard();
+
             randomNums = generateRandomNumbers();
         }
     }
 
-    private void updateRow(Square square, int value) {
+    private void updateRow(Square square, int value, Square taken) {
         if (square == null) {
             return;
         }
-        square.availableNums[value] = 1;
-        updateRow(square.nextInRow, value);
+        square.availableNums[value] = taken;
+        updateRow(square.nextInRow, value, taken);
     }
 
-    private void updateCol(Square square, int value) {
+    private void updateCol(Square square, int value, Square taken) {
         if (square == null) {
             return;
         }
-        square.availableNums[value] = 1;
-        updateCol(square.nextInCol, value);
+        square.availableNums[value] = taken;
+        updateCol(square.nextInCol, value, taken);
     }
 
-    private void updateBox(Square square, int value) {
+    private void updateBox(Square square, int value, Square taken) {
         if (square == null) {
             return;
         }
-        square.availableNums[value] = 1;
-        updateBox(square.nextInBox, value);
+        square.availableNums[value] = taken;
+        updateBox(square.nextInBox, value, taken);
     }
 
     private int findAvailableNum(Square square, List<Integer> listOfNums) {
         int num = 9;
-        int[] availableNums = square.availableNums;
-//        for (int i = 0; i < 9; i++) {
-//            System.out.print(availableNums[i]);
-//        }
-//        System.out.println();
+        int finalNumber= -1;
+        Square[] availableNums = square.availableNums;
         try {
             for (int i = 0; i < 9; i++) {
-                //    System.out.println(listOfNums);
                 num = listOfNums.get(i);
-                if (availableNums[num] == 0) {
+                if (availableNums[num] == null) {
                     listOfNums.remove(i);
+                    finalNumber = num;
                     break;
                 }
             }
         }catch (IndexOutOfBoundsException e){
 
         }
-        return num;
+
+        return finalNumber;
     }
+
 
     private List<Integer> generateRandomNumbers() {
         List<Integer> list = new ArrayList();
@@ -116,12 +118,37 @@ public class Board {
                 if (j % 3 == 0) {
                     System.out.print(" ");
                 }
-                System.out.print(board[i][j].toString());
+                System.out.print(board[i][j].toString()+" ");
             }
             if ((i + 1) % 3 == 0) {
                 System.out.println();
             }
             System.out.println();
         }
+        System.out.println("__________________");
+    }
+
+    public void printChecker(){
+        int v = 1;
+        for (int i = 0; i<9; i++){
+            for (int j =0; j<9; j++){
+                board[i][j].value = v;
+                v++;
+            }
+        }
+        printBoard();
+        for (int i = 0; i<9; i++){
+            for (int j =0; j<9; j++){
+                System.out.println("Value: " +board[i][j].value);
+                System.out.println( board[i][j].nextInRow != null? "next row value: " + board[i][j].nextInRow.value: "next row value: " + null);
+                System.out.println(board[i][j].nextInCol != null? "next col: "+  board[i][j].nextInCol.value: "next col: "+ null);
+                System.out.println( board[i][j].nextInBox != null? "next box: "+ board[i][j].nextInBox.value: "next box: "+null);
+                if (j%3 == 0 ){
+                    printBoard();
+                }
+            }
+        }
+
+
     }
 }
