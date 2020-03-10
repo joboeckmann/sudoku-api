@@ -20,20 +20,25 @@ public class Board {
                     board[i][j].nextInRow = board[i][j + 1];
 
                 }
-                if (j>0){
-                    board[i][j].prev= board[i][j-1];
+                if (j==8){
+                    board[i][j].nextInRow= board[i][0];
                 }
                 if (i < 8) {
                     board[i][j].nextInCol = board[i + 1][j];
                 }
-                if (((i + 1) % 3 == 0 )&& ((j + 1) % 3 == 0)) {}
+                 if (i ==8 ){
+                     board[i][j].nextInCol = board[0][j];
+                 }
+                if (((i + 1) % 3 == 0 )&& ((j + 1) % 3 == 0)) {
+                    board[i][j].nextInBox = board[i-2][j-2];
+                }
                  else if ((i < 8 )&& ((j + 1) % 3 == 0)) {
                         board[i][j].nextInBox = board[i + 1][j - 2];
                     } else if (j < 8) {
                         board[i][j].nextInBox = board[i][j + 1];
                     }
-
             }
+
         }
     }
 
@@ -41,54 +46,99 @@ public class Board {
 
     public void populateBoard() {
         List<Integer> randomNums = generateRandomNumbers();
-        Square square;
         for (int i = 0; i < 9; i++) {
             for (int j = 0; j < 9; j++) {
-                square = board[i][j];
+                 Square square = board[i][j];
                 int value = findAvailableNum(square, randomNums);
-                square.value = value;
-                updateRow(square.nextInRow, value,square);
-                updateCol(square.nextInCol, value,square);
-                updateBox(square, value,square );
-                printBoard();
+                if (value == -1){
+                    reorganizeBoard(square);
+                    return;
+                } else {
+                    square.value = value;
+                    updateEverything(square, true);
+                    printBoard();
+                }
             }
 
             randomNums = generateRandomNumbers();
         }
     }
 
-    private void updateRow(Square square, int value, Square taken) {
-        if (square == null) {
-            return;
+    public void reorganizeBoard(Square square){
+        Map<Integer, List<Square>> sorted = square.availableNums.entrySet().stream()
+                .sorted((a,b) -> b.getKey() - a.getKey())
+                .sorted((a, b) -> a.getValue().size() - b.getValue().size())
+                .collect(LinkedHashMap::new, (m, e) -> m.put(e.getKey(), e.getValue()), (m0, m1) -> m0.putAll(m1));
+        Map.Entry<Integer,List<Square>> entry = sorted.entrySet().iterator().next();
+        Integer key = entry.getKey();
+        square.value = key;
+        updateEverything(square, true);
+        for (int i = 0; i< square.availableNums.get(key).size(); i++){
+            Square updatedSquare = square.availableNums.get(key).get(i);
+            updateEverything(updatedSquare, false);
+            updatedSquare.value = -1;
+            printBoard();
+
         }
-        square.availableNums[value] = taken;
-        updateRow(square.nextInRow, value, taken);
+
     }
 
-    private void updateCol(Square square, int value, Square taken) {
-        if (square == null) {
-            return;
-        }
-        square.availableNums[value] = taken;
-        updateCol(square.nextInCol, value, taken);
+    public void updateEverything(Square square, boolean add){
+        updateRow(square, square.nextInRow, square.value,add);
+        updateCol(square, square.nextInCol, square.value,add);
+        updateBox(square, square.nextInBox, square.value,add );
     }
 
-    private void updateBox(Square square, int value, Square taken) {
-        if (square == null) {
+    private void updateRow(Square startSquare, Square square, int value, boolean add) {
+        if (square == startSquare) {
             return;
         }
-        square.availableNums[value] = taken;
-        updateBox(square.nextInBox, value, taken);
+        List squares =  square.availableNums.get(value);
+         if (add) {
+             squares.add(startSquare);
+         } else {
+             squares.remove(startSquare);
+         }
+        square.availableNums.put(value,squares);
+        updateRow(startSquare, square.nextInRow, value, add);
+    }
+
+    private void updateCol(Square startSquare,Square square, int value, boolean add) {
+        if (square == startSquare) {
+            return;
+        }
+        List squares =  square.availableNums.get(value);
+        if (add) {
+            squares.add(startSquare);
+        } else {
+            squares.remove(startSquare);
+        }
+        square.availableNums.put(value,squares);
+        updateCol(startSquare, square.nextInCol, value, add);
+    }
+
+    private void updateBox(Square startSquare, Square square, int value, boolean add) {
+        if (square == startSquare) {
+            return;
+        }
+        List squares =  square.availableNums.get(value);
+        if (add) {
+            squares.add(startSquare);
+        } else {
+            squares.remove(startSquare);
+        }
+        square.availableNums.put(value,squares);
+        updateBox(startSquare, square.nextInBox, value, add);
     }
 
     private int findAvailableNum(Square square, List<Integer> listOfNums) {
         int num = 9;
         int finalNumber= -1;
-        Square[] availableNums = square.availableNums;
+        HashMap<Integer,List<Square>> availableNums = square.availableNums;
         try {
             for (int i = 0; i < 9; i++) {
                 num = listOfNums.get(i);
-                if (availableNums[num] == null) {
+                if (availableNums.get(num).isEmpty()) {
                     listOfNums.remove(i);
                     finalNumber = num;
                     break;

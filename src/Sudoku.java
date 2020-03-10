@@ -5,6 +5,6 @@ public class Sudoku {
         board.generateBoard();
         board.populateBoard();
         board.printBoard();
-       // board.printChecker();
+      //  board.printChecker();
     }
 }
