@@ -24,6 +24,54 @@ public class Square {
 
     }
 
+    public void updateEverything(Square square, boolean add){
+        updateRow(this, this.nextInRow, this.value,add);
+        updateCol(this, this.nextInCol, this.value,add);
+        updateBox(this, this.nextInBox, this.value,add );
+    }
+
+    private void updateRow(Square startSquare, Square square, int value, boolean add) {
+        if (square == startSquare) {
+            return;
+        }
+        List squares =  square.availableNums.get(value);
+        if (add) {
+            squares.add(startSquare);
+        } else {
+            squares.remove(startSquare);
+        }
+        square.availableNums.put(value,squares);
+        updateRow(startSquare, square.nextInRow, value, add);
+    }
+
+    private void updateCol(Square startSquare,Square square, int value, boolean add) {
+        if (square == startSquare) {
+            return;
+        }
+        List squares =  square.availableNums.get(value);
+        if (add) {
+            squares.add(startSquare);
+        } else {
+            squares.remove(startSquare);
+        }
+        square.availableNums.put(value,squares);
+        updateCol(startSquare, square.nextInCol, value, add);
+    }
+
+    private void updateBox(Square startSquare, Square square, int value, boolean add) {
+        if (square == startSquare) {
+            return;
+        }
+        List squares =  square.availableNums.get(value);
+        if (add) {
+            squares.add(startSquare);
+        } else {
+            squares.remove(startSquare);
+        }
+        square.availableNums.put(value,squares);
+        updateBox(startSquare, square.nextInBox, value, add);
+    }
+
     @Override
     public String toString(){
         return ""+value;
