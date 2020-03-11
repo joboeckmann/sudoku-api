@@ -21,10 +21,20 @@ public class Square {
         availableNums.put(6, new ArrayList<>());
         availableNums.put(7, new ArrayList<>());
         availableNums.put(8, new ArrayList<>());
+        value = -1;
 
     }
 
+
+
     public void updateEverything(Square square, boolean add){
+        List squares =  square.availableNums.get(value);
+        if (add) {
+            squares.add(square);
+        } else {
+            squares.remove(square);
+        }
+        square.availableNums.put(value,squares);
         updateRow(this, this.nextInRow, this.value,add);
         updateCol(this, this.nextInCol, this.value,add);
         updateBox(this, this.nextInBox, this.value,add );

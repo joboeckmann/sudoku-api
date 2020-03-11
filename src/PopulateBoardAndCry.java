@@ -1,20 +1,24 @@
 import com.sun.org.apache.xpath.internal.SourceTree;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 public class PopulateBoardAndCry {
 
 
     public static void populateBoard(Square[][] board) {
+        boolean success;
         for (int i = 0; i < 9; i++) {
             for (int j = 0; j < 9; j++) {
                  Square square = board[i][j];
                 int value = findAvailableNum(square);
                 if (value == -1){
-                    System.out.println("pos: "+i+" "+j);
-                    value = reorganizeBoard(square, 0, -1);
-                    if (value == -1){
-                        return;
+                    success = reorganizeBoard(square);
+                    if (!success){
+                        System.out.println("reset "+i + " "+j);
+                        resetRow(board[i]);
+                        j = -1;
+                        GeneralBoard.printBoard(board);
                     }
                 } else {
                     square.value = value;
@@ -26,38 +30,63 @@ public class PopulateBoardAndCry {
         }
     }
 
-    public static int reorganizeBoard(Square square, int retries){
+    private static void resetRow(Square[] squares) {
+        for (int i = 0; i< squares.length; i++) {
+           if (squares[i].value!= -1) {
+               squares[i].updateEverything(squares[i], false);
+           }
+            squares[i].value = -1;
+        }
+    }
+
+    public static boolean reorganizeBoard(Square square){
         System.out.println("flippy");
-//        Map<Integer, List<Square>> sorted = square.availableNums.entrySet().stream()
-//                .sorted((a,b) -> b.getKey() - a.getKey())
-//                .sorted(Comparator.comparingInt(a -> a.getValue().size()))
-//                .collect(LinkedHashMap::new, (m, e) -> m.put(e.getKey(), e.getValue()), (m0, m1) -> m0.putAll(m1));
-        Map<Integer, Integer> keysSize = square.avai
-        Map.Entry<Integer,List<Square>> entry = sorted.entrySet().iterator().next();
-        Integer key = entry.getKey();
-        square.value = key;
-        square.updateEverything(square, true);
-        for (int i = 0; i< square.availableNums.get(key).size(); i++){
-            System.out.println("how many are here: "+square.availableNums.get(key).size());
-            Square updatedSquare = square.availableNums.get(key).get(i);
-            System.out.println("who are you "+ updatedSquare);
-            square.updateEverything(updatedSquare, false);
-            List<Square> squares = updatedSquare.availableNums.get(key);
-            squares.add(square);
-            updatedSquare.availableNums.put(key, squares);
-            int value = findAvailableNum(updatedSquare);
-            if (value == -1 ){
-                if (retries < 3) {
-                    System.out.println("flippy double flip: " + retries);
-                    reorganizeBoard(updatedSquare, retries++);
-                }
-            } else {
-                updatedSquare.value = value;
-                square.updateEverything(updatedSquare, true);
-                return value;
+        Map<Integer, Map<Integer, List<Square>>> keysSize = createKeySizeMap(square.availableNums);
+        Map.Entry<Integer,Map<Integer, List<Square>>> entry = keysSize.entrySet().iterator().next();
+        SquareValue updatedSquare = findSimpleFlipperIfPossible(entry.getValue());
+        if (updatedSquare != null){
+            square.value = updatedSquare.square.value;
+            square.updateEverything(square, true);
+            updatedSquare.square.updateEverything(updatedSquare.square, false);
+            updatedSquare.square.value = updatedSquare.newValue;
+            updatedSquare.square.updateEverything(updatedSquare.square, true);
+            return true;
+
+        }
+        return false;
+    }
+
+    private static Map<Integer, Map<Integer,List<Square>>> createKeySizeMap(HashMap<Integer, List<Square>> availableNums) {
+        HashMap<Integer, Map<Integer, List<Square>>> sizeMap = new HashMap();
+        for (Map.Entry<Integer, List<Square>> entry: availableNums.entrySet()){
+            int value = entry.getKey();
+            HashMap < Integer, List<Square>> map = new HashMap<>();
+            Map existingMap =sizeMap.get(entry.getValue().size());
+            if (existingMap != null) {
+                existingMap.put(value, entry.getValue());
+                sizeMap.put(entry.getValue().size(), existingMap);
+            }
+            else {
+                sizeMap.put(entry.getValue().size(), map);
             }
         }
-        return key;
+        Map<Integer,Map<Integer, List<Square>>> sorted =sizeMap.entrySet().stream().sorted((a,b) -> a.getKey() - b.getKey()).collect(LinkedHashMap::new, (m, e) -> m.put(e.getKey(), e.getValue()), (m0, m1) -> m0.putAll(m1));
+        return sorted;
+    }
+
+    private static SquareValue findSimpleFlipperIfPossible(Map<Integer,List<Square>> map) {
+       for (Map.Entry<Integer, List<Square>> entry: map.entrySet()){
+           for (Square s: entry.getValue()) {
+               int value = findAvailableNum(s);
+               if (value != -1) {
+                    SquareValue sv = new SquareValue();
+                    sv.newValue = value;
+                    sv.square = s;
+                   return sv;
+               }
+           }
+        }
+        return null;
     }
 
 
@@ -89,6 +118,12 @@ public class PopulateBoardAndCry {
         }
         Collections.shuffle(list);
         return list;
+    }
+
+    public static class SquareValue {
+        public Integer newValue;
+        public Square square;
+
     }
 
 }
