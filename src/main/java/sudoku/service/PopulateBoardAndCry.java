@@ -1,7 +1,8 @@
-import com.sun.org.apache.xpath.internal.SourceTree;
+package sudoku.service;
+
+import sudoku.model.Square;
 
 import java.util.*;
-import java.util.stream.Collectors;
 
 public class PopulateBoardAndCry {
 
@@ -18,15 +19,12 @@ public class PopulateBoardAndCry {
                         System.out.println("reset "+i + " "+j);
                         resetRow(board[i]);
                         j = -1;
-                        GeneralBoard.printBoard(board);
                     }
                 } else {
                     square.value = value;
                     square.updateEverything(square, true);
-                    GeneralBoard.printBoard(board);
                 }
             }
-
         }
     }
 

@@ -1,3 +1,7 @@
+package sudoku.service;
+
+import sudoku.model.Square;
+
 public class GeneralBoard {
 
     public static void generateBoard(Square[][] board) {

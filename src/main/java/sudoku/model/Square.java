@@ -1,14 +1,16 @@
+package sudoku.model;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
 
 public class Square {
-    int value;
-    Square nextInRow;
-    Square nextInCol;
-    Square nextInBox;
-    HashMap<Integer, List<Square>> availableNums;
+    public int value;
+    public Square nextInRow;
+    public Square nextInCol;
+    public Square nextInBox;
+    public HashMap<Integer, List<Square>> availableNums;
 
     public Square () {
         availableNums = new HashMap<>();
