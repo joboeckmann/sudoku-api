@@ -3,6 +3,7 @@ package sudoku.service;
 import sudoku.model.Square;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 public class PopulateBoardAndCry {
 
@@ -16,9 +17,8 @@ public class PopulateBoardAndCry {
                 if (value == -1){
                     success = reorganizeBoard(square);
                     if (!success){
-                        System.out.println("reset "+i + " "+j);
-                        resetRow(board[i]);
-                        j = -1;
+                        System.out.println("undo");
+                         undoPrevious(square.prev, square, board);
                     }
                 } else {
                     square.value = value;
@@ -28,14 +28,71 @@ public class PopulateBoardAndCry {
         }
     }
 
-    private static void resetRow(Square[] squares) {
-        for (int i = 0; i< squares.length; i++) {
-           if (squares[i].value!= -1) {
-               squares[i].updateEverything(squares[i], false);
-           }
-            squares[i].value = -1;
+    private static void undoPrevious(Square squareToUndo, Square startSquare, Square[][] board){
+        boolean success = false;
+        while (!success) {
+            int currValue = squareToUndo.value;
+            squareToUndo.attempted.add(currValue);
+            List<Integer> avail = squareToUndo.getAvailableNumbers();
+            List<Integer> stillAvail = avail.stream().filter(t -> !squareToUndo.attempted.contains(t)).collect(Collectors.toList());
+            squareToUndo.updateEverything(squareToUndo, false);
+            if (stillAvail.isEmpty()){
+                squareToUndo.value = -1;
+                System.out.println("undo undo");
+                undoPrevious(squareToUndo.prev, startSquare, board);
+                return;
+            }
+            squareToUndo.value = stillAvail.get(0);
+            squareToUndo.updateEverything(squareToUndo, true);
+            success = updateSquaresWithNewValues(squareToUndo.nextInRow, startSquare, board);
+             if (success){
+                 System.out.println("undo do");
+                 return;
+             }
+
         }
+
+
     }
+
+    private static boolean updateSquaresWithNewValues(Square squareToUpdate, Square startSquare, Square[][] board){
+        boolean found = false;
+        boolean success = true;
+        Square curr = squareToUpdate;
+        while (!found){
+            int value = findAvailableNum(curr);
+            if (value == -1) {
+                if (squareToUpdate == curr){
+                    return false;
+                }
+                    resetSquares(squareToUpdate, curr.prev);
+                    return false;
+            } else {
+                curr.value = value;
+                curr.updateEverything(curr, true);
+            }
+            if (curr == startSquare){
+                return true;
+            }
+            curr = curr.nextInRow;
+        }
+        return true;
+    }
+
+    private static void resetSquares(Square startSquare, Square square){
+        System.out.println("reset: "+ square);
+        System.out.println("start:"+ startSquare);
+        while (square != startSquare){
+            System.out.println("blarg: "+ square);
+            square.updateEverything(square, false);
+            square.value = -1;
+            square = square.prev;
+        }
+        square.updateEverything(square, false);
+        square.value = -1;
+
+    }
+
 
     public static boolean reorganizeBoard(Square square){
         System.out.println("flippy");

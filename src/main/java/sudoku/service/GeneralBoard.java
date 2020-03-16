@@ -12,12 +12,23 @@ public class GeneralBoard {
         }
         for (int i = 0; i < 9; i++) {
             for (int j = 0; j < 9; j++) {
+                if (j == 0 ){
+                    if (i != 0) {
+                        board[i][j].prev = board[i - 1][8];
+                    }
+                }
+                if (j > 0){
+                    board[i][j].prev = board[i][j-1];
+                }
                 if (j < 8) {
                     board[i][j].nextInRow = board[i][j + 1];
-
+                    board[i][j].next = board[i][j+1];
                 }
                 if (j==8){
                     board[i][j].nextInRow= board[i][0];
+                    if (i != 8){
+                        board[i][j].next = board[i+1][0];
+                    }
                 }
                 if (i < 8) {
                     board[i][j].nextInCol = board[i + 1][j];

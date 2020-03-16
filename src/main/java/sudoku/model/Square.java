@@ -10,9 +10,14 @@ public class Square {
     public Square nextInRow;
     public Square nextInCol;
     public Square nextInBox;
+    public Square prev;
+    public Square next;
     public HashMap<Integer, List<Square>> availableNums;
+    public List<Integer> attempted;
+
 
     public Square () {
+        attempted = new ArrayList<>();
         availableNums = new HashMap<>();
         availableNums.put(0, new ArrayList<>());
         availableNums.put(1, new ArrayList<>());
@@ -89,4 +94,13 @@ public class Square {
         return ""+value;
     }
 
+    public List<Integer> getAvailableNumbers() {
+        List<Integer> avail = new ArrayList<>();
+        for (int i = 0 ; i < 9; i ++){
+            if (availableNums.get(i).isEmpty()){
+                avail.add(i);
+            }
+        }
+        return avail;
+    }
 }
