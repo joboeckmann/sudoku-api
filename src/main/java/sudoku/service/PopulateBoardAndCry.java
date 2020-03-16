@@ -44,7 +44,7 @@ public class PopulateBoardAndCry {
             }
             squareToUndo.value = stillAvail.get(0);
             squareToUndo.updateEverything(squareToUndo, true);
-            success = updateSquaresWithNewValues(squareToUndo.nextInRow, startSquare, board);
+            success = updateSquaresWithNewValues(squareToUndo.next, startSquare, board);
              if (success){
                  System.out.println("undo do");
                  return;
@@ -74,7 +74,7 @@ public class PopulateBoardAndCry {
             if (curr == startSquare){
                 return true;
             }
-            curr = curr.nextInRow;
+            curr = curr.next;
         }
         return true;
     }
